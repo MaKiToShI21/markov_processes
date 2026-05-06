@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>750</width>
-    <height>650</height>
+    <width>600</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>750</width>
-    <height>650</height>
+    <width>600</width>
+    <height>700</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -21,9 +21,72 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="mainLayout">
+    <property name="leftMargin">
+     <number>16</number>
+    </property>
+    <property name="topMargin">
+     <number>16</number>
+    </property>
+    <property name="rightMargin">
+     <number>16</number>
+    </property>
+    <property name="bottomMargin">
+     <number>16</number>
+    </property>
     <property name="spacing">
      <number>12</number>
     </property>
+    <item>
+     <widget class="QGroupBox" name="vectorGroup">
+      <property name="title">
+       <string>Вектор начальных вероятностей</string>
+      </property>
+      <layout class="QVBoxLayout" name="vectorLayout">
+       <item>
+        <widget class="QTableWidget" name="vectorTable">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>55</height>
+          </size>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>55</height>
+          </size>
+         </property>
+         <property name="rowCount">
+          <number>1</number>
+         </property>
+         <property name="columnCount">
+          <number>3</number>
+         </property>
+         <row>
+          <property name="text">
+           <string></string>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>Ц</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>З</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>О</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item>
      <widget class="QGroupBox" name="matrixGroup">
       <property name="title">
@@ -32,9 +95,6 @@
       <layout class="QVBoxLayout" name="matrixLayout">
        <item>
         <widget class="QTableWidget" name="matrixTable">
-         <property name="fixedHeight" stdset="0">
-          <number>130</number>
-         </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
@@ -95,39 +155,13 @@
       </property>
       <layout class="QGridLayout" name="paramsLayout">
        <item row="0" column="0">
-        <widget class="QLabel" name="labelInitialState">
-         <property name="text">
-          <string>Начальное состояние:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="initialStateCombo">
-         <item>
-          <property name="text">
-           <string>Ц (Центральный)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>З (Заельцовский)</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>О (Октябрьский)</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="1" column="0">
         <widget class="QLabel" name="labelSteps">
          <property name="text">
           <string>Количество шагов (k):</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="0" column="1">
         <widget class="QSpinBox" name="stepsSpin">
          <property name="minimum">
           <number>1</number>
