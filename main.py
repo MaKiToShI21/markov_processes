@@ -116,10 +116,11 @@ class MarkovChainApp(QMainWindow):
             return
 
         k = self.stepsSpin.value()
+        precision = self.precisionSpin.value()
         initial_idx = self._determine_initial_state(vector)
 
         result = self._compute(matrix, vector, k)
-        self._display_result(matrix, vector, initial_idx, k, result)
+        self._display_result(matrix, vector, initial_idx, k, result, precision)
 
     def calculate_all(self):
         try:
@@ -134,8 +135,9 @@ class MarkovChainApp(QMainWindow):
             return
 
         k = self.stepsSpin.value()
+        precision = self.precisionSpin.value()
         output_lines = []
-        output_lines.append(f"Результаты для всех начальных состояний (k = {k})")
+        output_lines.append(f"Результаты для всех начальных состояний (k = {k}, точность = {precision})")
 
         matrix_k = np.linalg.matrix_power(matrix, k)
         output_lines.append(f"Матрица переходов P^{k}:")
@@ -147,12 +149,17 @@ class MarkovChainApp(QMainWindow):
             initial_vector[idx] = 1.0
             result = self._compute(matrix, initial_vector, k)
 
-            output_lines.append(f"{'─'*60}")
             output_lines.append(f"Начальное состояние: {STATES[idx]}")
-            output_lines.append(f"  P(Ц) = {result[0]:.6f}")
-            output_lines.append(f"  P(З) = {result[1]:.6f}")
-            output_lines.append(f"  P(О) = {result[2]:.6f}")
-            output_lines.append(f"  Вероятность возврата в {STATES[idx]}: {result[idx]:.6f}")
+            output_lines.append(f"  P(Ц) = {result[0]:.4f}")
+            output_lines.append(f"  P(З) = {result[1]:.4f}")
+            output_lines.append(f"  P(О) = {result[2]:.4f}")
+            output_lines.append(f"  Вероятность возврата в {STATES[idx]}: {result[idx]:.4f}")
+
+            threshold_step = self._find_threshold_step(matrix, initial_vector, idx, k, precision)
+            if threshold_step is not None:
+                output_lines.append(f"  Шаг, на котором P({SHORT_LABELS[idx]}) > {precision}: {threshold_step}")
+            else:
+                output_lines.append(f"  Шаг, на котором P({SHORT_LABELS[idx]}) > {precision}: Не найдено")
             output_lines.append("")
 
         self.resultsText.setText("\n".join(output_lines))
@@ -160,6 +167,14 @@ class MarkovChainApp(QMainWindow):
     def _compute(self, matrix, initial_vector, k):
         matrix_k = np.linalg.matrix_power(matrix, k)
         return initial_vector @ matrix_k
+
+    def _find_threshold_step(self, matrix, initial_vector, target_idx, k, precision):
+        current = initial_vector.copy()
+        for step in range(1, k + 1):
+            current = current @ matrix
+            if current[target_idx] > precision:
+                return step
+        return None
 
     def _format_matrix(self, matrix):
         lines = []
@@ -170,12 +185,12 @@ class MarkovChainApp(QMainWindow):
             lines.append(row_str)
         return "\n".join(lines)
 
-    def _display_result(self, matrix, vector, initial_idx, k, result):
+    def _display_result(self, matrix, vector, initial_idx, k, result, precision):
         output_lines = []
         r_info = f"Начальный район: {STATES[initial_idx]}"
         output_lines.append(r_info)
         output_lines.append(f"Вектор начальных вероятностей: [{vector[0]:.2f}, {vector[1]:.2f}, {vector[2]:.2f}]")
-        output_lines.append(f"Количество шагов: k = {k}")
+        output_lines.append(f"Количество шагов: k = {k}, точность = {precision}")
         output_lines.append("")
 
         matrix_k = np.linalg.matrix_power(matrix, k)
@@ -187,13 +202,18 @@ class MarkovChainApp(QMainWindow):
         current = vector.copy()
         for step in range(1, k + 1):
             current = current @ matrix
-            output_lines.append(f"  Шаг {step}: P(Ц)={current[0]:.6f}  P(З)={current[1]:.6f}  P(О)={current[2]:.6f}")
+            output_lines.append(f"  Шаг {step}: P(Ц)={current[0]:.4f}  P(З)={current[1]:.4f}  P(О)={current[2]:.4f}")
 
-        output_lines.append(f"\n{'─'*60}")
-        output_lines.append(f"Итоговые вероятности после {k} шагов:")
-        output_lines.append(f"  P(Ц) = {result[0]:.6f}")
-        output_lines.append(f"  P(З) = {result[1]:.6f}")
-        output_lines.append(f"  P(О) = {result[2]:.6f}")
+        output_lines.append(f"\nИтоговые вероятности после {k} шагов:")
+        output_lines.append(f"  P(Ц) = {result[0]:.4f}")
+        output_lines.append(f"  P(З) = {result[1]:.4f}")
+        output_lines.append(f"  P(О) = {result[2]:.4f}\n")
+
+        threshold_step = self._find_threshold_step(matrix, vector, initial_idx, k, precision)
+        if threshold_step is not None:
+            output_lines.append(f"Шаг, на котором P({SHORT_LABELS[initial_idx]}) > {precision}: {threshold_step}")
+        else:
+            output_lines.append(f"Шаг, на котором P({SHORT_LABELS[initial_idx]}) > {precision}: Не найдено")
 
         self.resultsText.setText("\n".join(output_lines))
 
