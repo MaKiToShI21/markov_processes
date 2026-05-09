@@ -117,10 +117,11 @@ class MarkovChainApp(QMainWindow):
 
         k = self.stepsSpin.value()
         precision = self.precisionSpin.value()
+        target_idx = self.targetDistrictCombo.currentIndex()
         initial_idx = self._determine_initial_state(vector)
 
         result = self._compute(matrix, vector, k)
-        self._display_result(matrix, vector, initial_idx, k, result, precision)
+        self._display_result(matrix, vector, initial_idx, target_idx, k, result, precision)
 
     def calculate_all(self):
         try:
@@ -136,11 +137,13 @@ class MarkovChainApp(QMainWindow):
 
         k = self.stepsSpin.value()
         precision = self.precisionSpin.value()
+        target_idx = self.targetDistrictCombo.currentIndex()
         output_lines = []
-        output_lines.append(f"Результаты для всех начальных состояний (k = {k}, точность = {precision})")
+        output_lines.append(f"Результаты для всех начальных состояний (k = {k}, порог = {precision})")
+        output_lines.append(f"Целевой район: {STATES[target_idx]}")
 
         matrix_k = np.linalg.matrix_power(matrix, k)
-        output_lines.append(f"Матрица переходов P^{k}:")
+        output_lines.append(f"\nМатрица переходов P^{k}:")
         output_lines.append(self._format_matrix(matrix_k))
         output_lines.append("")
 
@@ -153,13 +156,12 @@ class MarkovChainApp(QMainWindow):
             output_lines.append(f"  P(Ц) = {result[0]:.4f}")
             output_lines.append(f"  P(З) = {result[1]:.4f}")
             output_lines.append(f"  P(О) = {result[2]:.4f}")
-            output_lines.append(f"  Вероятность возврата в {STATES[idx]}: {result[idx]:.4f}")
 
-            threshold_step = self._find_threshold_step(matrix, initial_vector, idx, k, precision)
+            threshold_step = self._find_threshold_step(matrix, initial_vector, target_idx, k, precision)
             if threshold_step is not None:
-                output_lines.append(f"  Шаг, на котором P({SHORT_LABELS[idx]}) > {precision}: {threshold_step}")
+                output_lines.append(f"  Шаг, на котором P({SHORT_LABELS[target_idx]}) > {precision}: {threshold_step}")
             else:
-                output_lines.append(f"  Шаг, на котором P({SHORT_LABELS[idx]}) > {precision}: Не найдено")
+                output_lines.append(f"  Шаг, на котором P({SHORT_LABELS[target_idx]}) > {precision}: Не найдено")
             output_lines.append("")
 
         self.resultsText.setText("\n".join(output_lines))
@@ -185,12 +187,12 @@ class MarkovChainApp(QMainWindow):
             lines.append(row_str)
         return "\n".join(lines)
 
-    def _display_result(self, matrix, vector, initial_idx, k, result, precision):
+    def _display_result(self, matrix, vector, initial_idx, target_idx, k, result, precision):
         output_lines = []
-        r_info = f"Начальный район: {STATES[initial_idx]}"
-        output_lines.append(r_info)
+        output_lines.append(f"Начальный район: {STATES[initial_idx]}")
+        output_lines.append(f"Целевой район: {STATES[target_idx]}")
         output_lines.append(f"Вектор начальных вероятностей: [{vector[0]:.2f}, {vector[1]:.2f}, {vector[2]:.2f}]")
-        output_lines.append(f"Количество шагов: k = {k}, точность = {precision}")
+        output_lines.append(f"Количество шагов: k = {k}, порог = {precision}")
         output_lines.append("")
 
         matrix_k = np.linalg.matrix_power(matrix, k)
@@ -209,11 +211,11 @@ class MarkovChainApp(QMainWindow):
         output_lines.append(f"  P(З) = {result[1]:.4f}")
         output_lines.append(f"  P(О) = {result[2]:.4f}\n")
 
-        threshold_step = self._find_threshold_step(matrix, vector, initial_idx, k, precision)
+        threshold_step = self._find_threshold_step(matrix, vector, target_idx, k, precision)
         if threshold_step is not None:
-            output_lines.append(f"Шаг, на котором P({SHORT_LABELS[initial_idx]}) > {precision}: {threshold_step}")
+            output_lines.append(f"Шаг, на котором P({SHORT_LABELS[target_idx]}) > {precision}: {threshold_step}")
         else:
-            output_lines.append(f"Шаг, на котором P({SHORT_LABELS[initial_idx]}) > {precision}: Не найдено")
+            output_lines.append(f"Шаг, на котором P({SHORT_LABELS[target_idx]}) > {precision}: Не найдено")
 
         self.resultsText.setText("\n".join(output_lines))
 
